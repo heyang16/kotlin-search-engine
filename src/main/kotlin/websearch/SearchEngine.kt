@@ -39,10 +39,9 @@ class SearchResultsSummary(
   override fun toString(): String {
     return if (results == null) "No results for $query found."
     else {
-      var out = "Results for $query:\n"
-      val s: String =
+      val s =
         results.joinToString { r -> "  ${r.url} - ${r.numRefs} references" }
-      return out + s
+      return "Found ${results.size} results for $query:\n" + s
     }
   }
 }
