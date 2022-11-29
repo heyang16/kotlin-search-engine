@@ -15,7 +15,7 @@ class WebCrawler(val startFrom: URL) {
       try {
         startFrom.download().extractLinks().toMutableList()
       } catch (e: IOException) {
-        println("Cannot download ${startFrom.toString()}")
+        println("Cannot download $startFrom")
         when (e) {
           is HttpStatusException -> println("Error: Http Status Exception")
         }
@@ -34,7 +34,7 @@ class WebCrawler(val startFrom: URL) {
           notVisited += newPage.extractLinks() // Adds all the links from the page
         }
       } catch (e: IOException) {
-        println("${newurl.toString()} cannot be downloaded")
+        println("$newurl cannot be downloaded")
       }
       visited += newurl
       notVisited.removeAt(0)
