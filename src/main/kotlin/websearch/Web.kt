@@ -2,12 +2,22 @@ package websearch
 
 import org.jsoup.Jsoup.connect
 import org.jsoup.nodes.Document
+import java.io.IOException
 import java.util.*
 
 class URL(val url: String) {
   override fun toString(): String = url
   override fun equals(other: Any?): Boolean = url == other.toString()
-  fun download(): WebPage = WebPage(connect(url).get())
+  fun download(): WebPage {
+    return try {
+      val page = WebPage(connect(url).get())
+      println("Downloaded $url successfully")
+      page
+    } catch (e: IOException) {
+      println("Unable to download $url")
+      WebPage(Document("")) // returns an empty document
+    }
+  }
 }
 
 class WebPage(val doc: Document) {

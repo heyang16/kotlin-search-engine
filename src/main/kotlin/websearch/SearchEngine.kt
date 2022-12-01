@@ -40,8 +40,8 @@ class SearchResultsSummary(
     return if (results == null) "No results for $query found."
     else {
       val s =
-        results.joinToString { r -> "  ${r.url} - ${r.numRefs} references" }
-      return "Found ${results.size} results for $query:\n" + s
+        results.joinToString { r -> "\n  ${r.url} - ${r.numRefs} references" }
+      return "Found ${results.size} results for $query:" + s
     }
   }
 }

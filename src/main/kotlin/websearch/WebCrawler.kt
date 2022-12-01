@@ -1,45 +1,33 @@
 package websearch
 
-import org.jsoup.HttpStatusException
-import java.io.IOException
 import java.util.concurrent.ThreadLocalRandom
 
 class WebCrawler(val startFrom: URL) {
-  val limit = 40
+  val limit = 30 // Maximum amount of downloads
   val downloaded: MutableMap<URL, WebPage> = mutableMapOf()
 
+  // Webcrawler starts at a starting link, extract all links, downloads them,
+  // and picks an unvisited link from the downloaded links and repeats
   fun run() {
-    val outmap: MutableMap<URL, WebPage> = mutableMapOf()
-    val visited: MutableList<URL> = mutableListOf()
-    val notVisited: MutableList<URL> =
-      try {
-        startFrom.download().extractLinks().toMutableList()
-      } catch (e: IOException) {
-        println("Cannot download $startFrom")
-        when (e) {
-          is HttpStatusException -> println("Error: Http Status Exception")
-        }
-        return
-      }
-    while (outmap.size <= limit && notVisited.size > 0) {
+    // The reason why I'm not using a mutable set is that problems arise
+    // when using the method contains() on a mutable set
+    val visited: MutableList<URL> = mutableListOf(startFrom)
+    val toVisit: MutableList<URL> =
+      startFrom.download().extractLinks().toMutableList()
+
+    while (downloaded.size <= limit && toVisit.size > 0) {
       // Picks a random url from the list of unvisited urls
-      val newurl = notVisited[
-        ThreadLocalRandom.current().nextInt(notVisited.size)
-      ]
+      val randomIndex = ThreadLocalRandom.current().nextInt(toVisit.size)
+      val newurl = toVisit[randomIndex]
       // Downloads the first unvisited page
-      try {
-        if (!visited.contains(newurl)) {
-          val newPage = newurl.download()
-          outmap[newurl] = newPage
-          notVisited += newPage.extractLinks() // Adds all the links from the page
-        }
-      } catch (e: IOException) {
-        println("$newurl cannot be downloaded")
+      if (!visited.contains(newurl)) {
+        val newPage = newurl.download()
+        downloaded[newurl] = newPage
+        toVisit += newPage.extractLinks() // Adds all the links from the page
       }
-      visited += newurl
-      notVisited.removeAt(0)
+      toVisit.removeAt(randomIndex)
+      visited.add(newurl)
     }
-    downloaded.putAll(outmap)
   }
 
   // Returns the map of urls to their downloaded webpages
@@ -48,9 +36,9 @@ class WebCrawler(val startFrom: URL) {
 
 fun main() {
   val crawler =
-    WebCrawler(startFrom = URL("https://www.linkedin.com/school/imperial-college-london/"))
+    WebCrawler(startFrom = URL("https://bbc.co.uk"))
   crawler.run()
   val searchEngine = SearchEngine(crawler.dump())
   searchEngine.compileIndex()
-  println(searchEngine.searchFor("malaysia"))
+  println(searchEngine.searchFor("news"))
 }
